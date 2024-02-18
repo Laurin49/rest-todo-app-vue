@@ -6,6 +6,7 @@
         :class="completedClass"
         type="checkbox"
         :checked="task.is_completed"
+        @change="markTaskAsCompleted"
       />
       <div class="ms-2 flex-grow-1"
         :class="completedClass"
@@ -26,7 +27,10 @@
       </div>
       <!-- <div class="task-date">24 Feb 12:00</div> -->
     </div>
-    <TaskActions @edit="isEdit = true" @remove="" v-show="!isEdit" />
+    <TaskActions 
+        @edit="isEdit = true" 
+        @remove="removeTask"
+        v-show="!isEdit" />
   </li>
 </template>
 <script setup>
@@ -39,13 +43,14 @@ const props = defineProps({
 const isEdit = ref(false);
 const editingTask = ref(props.task.name)
 
+const emit = defineEmits(['updated', 'completed', 'removed'])
+
 const completedClass = computed(() =>
   props.task.is_completed ? "completed" : ""
 );
 const vFocus = {
     mounted: (el) => el.focus()
 };
-const emit = defineEmits(['updated'])
 const updateTask = event => {
   const updatedTask = { ...props.task, name: event.target.value }
     isEdit.value = false
@@ -54,5 +59,14 @@ const updateTask = event => {
 const undo = () => {
   isEdit.value = false
   editingTask.value = props.task.name
+}
+const markTaskAsCompleted = event => {
+    const updatedTask = { ...props.task, is_completed: !props.task.is_completed }
+    emit('completed', updatedTask)
+}
+const removeTask = () => {
+    if (confirm("Are you sure?")) {
+        emit('removed', props.task)
+    }
 }
 </script>
